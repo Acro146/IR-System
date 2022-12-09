@@ -41,7 +41,7 @@ class Scanner(metaclass=ABCMeta):
 
     @abstractmethod
     def __iter__(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class TokensScanner(Scanner):

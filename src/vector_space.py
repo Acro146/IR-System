@@ -121,7 +121,7 @@ class VectorSpace:
         return query_result
 
     def __calculate_query_length(self, query_result):
-        for term, term_data in query_result.terms.items():
+        for term_data in query_result.terms.values():
             query_result.length += term_data.tf_idf ** 2
         query_result.length = sqrt(query_result.length)
         return query_result

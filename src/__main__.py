@@ -60,7 +60,7 @@ def query(phrase, collection):
     query_result = []
     for candidate in matched_documents:
         result = vector_space.get_query_results(phrase, candidate.document)
-        if not len(query_result):
+        if not query_result:
             query_result.append(result)
         ranked_result.update({candidate: result.cosin_similarity})
 
