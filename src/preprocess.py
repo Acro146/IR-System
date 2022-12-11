@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Set, TextIO
+from typing import Set
 from io import StringIO
 
 
@@ -33,9 +33,9 @@ class StopWords:
 
 
 class Scanner(metaclass=ABCMeta):
-    text: TextIO = field(default_factory=lambda: StringIO())
+    text: StringIO = field(default_factory=lambda: StringIO())
 
-    def __call__(self, text: TextIO):
+    def __call__(self, text):
         self.text = text
         return self
 
@@ -68,7 +68,7 @@ class Tokenizer:
     stop_list: StopWords
     normalizer: Normalizer
     scanner: Scanner
-    text: TextIO = field(default_factory=lambda: StringIO())
+    text: StringIO = field(default_factory=lambda: StringIO())
 
     def __call__(self, text):
         self.text = text

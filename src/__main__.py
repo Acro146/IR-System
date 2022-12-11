@@ -58,11 +58,19 @@ def query(phrase, collection):
 
     query_result: list[vector_space.QueryResult()]
     query_result = []
+    query_document_product: OrderedDict[str:{str, float}]
+    query_document_product: OrderedDict()
+
     for candidate in matched_documents:
         result = vector_space.get_query_results(phrase, candidate.document)
         if not query_result:
             query_result.append(result)
+
         ranked_result.update({candidate: result.cosin_similarity})
+
+    """ uncomment this to print query document product """
+    """for result in query_result:
+        print(repr(result.query_document_product))"""
 
     print_query_result(query_result)
     print_ranked_result(ranked_result)
@@ -138,7 +146,8 @@ def main():
         if not is_valid_file(Path(collection) / "index") or not is_valid_file(Path(collection) / "vector_space"):
             print("The 'index' or 'vector_space' are not found, please build the index first.")
             return
-        query(input("Enter the phrase: "), collection)
+        phrase = input("Enter phrase: ")
+        query(phrase, collection)
 
     else:
         sys.exit()

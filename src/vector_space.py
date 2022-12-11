@@ -35,7 +35,7 @@ class QueryResult:
     terms: OrderedDict[str, TermData]
     length: float
     cosin_similarity: float
-    query_document_product: list[float] = field(default_factory=lambda: [])
+    query_document_product: OrderedDict[str, OrderedDict[str, float]]
 
 
 @dataclass
@@ -92,7 +92,8 @@ class VectorSpace:
 
     def get_query_results(self, phrase, document):
         phrase = self.tokenizer(StringIO(phrase))
-        query_result = QueryResult(OrderedDict(), length=0, cosin_similarity=0, query_document_product=[])
+        query_result = QueryResult(terms=OrderedDict(), length=0, cosin_similarity=0,
+                                   query_document_product=OrderedDict())
         query_result = self.__get_terms_query_data(query_result, phrase)
         query_result = self.__calculate_terms_query_tf_idf(query_result)
         query_result = self.__calculate_query_length(query_result)
@@ -105,13 +106,22 @@ class VectorSpace:
                 query_result.terms[term].tf += 1
                 query_result.terms[term].w_tf = 1.0 + log(query_result.terms[term].tf)
                 continue
-            query_result.terms.update(
-                {term: TermData(tf=1,
-                                df=self.terms_in_documents[term].df,
-                                idf=self.terms_in_documents[term].idf,
-                                w_tf=1,
-                                tf_idf=0,
-                                norm_tf_idf=0)})
+            if term in self.terms_in_documents:
+                query_result.terms.update(
+                    {term: TermData(tf=1,
+                                    df=self.terms_in_documents[term].df,
+                                    idf=self.terms_in_documents[term].idf,
+                                    w_tf=1,
+                                    tf_idf=0,
+                                    norm_tf_idf=0)})
+            else:
+                query_result.terms.update(
+                    {term: TermData(tf=1,
+                                    df=0,
+                                    idf=0,
+                                    w_tf=1,
+                                    tf_idf=0,
+                                    norm_tf_idf=0)})
 
         return query_result
 
@@ -128,10 +138,16 @@ class VectorSpace:
 
     def __calculate_cosin_similarity(self, query_result, document):
         for term, term_data in query_result.terms.items():
-            term_data.norm_tf_idf = term_data.tf_idf / query_result.length if query_result.length else 0
-            query_result.query_document_product = term_data.norm_tf_idf * self.terms_in_documents[term].norm_tf_idf[
-                document]
-            query_result.cosin_similarity += query_result.query_document_product
+            if term in self.terms_in_documents.keys():
+                term_data.norm_tf_idf = term_data.tf_idf / query_result.length if query_result.length else 0
+                query_result.query_document_product.update(
+                    {term: {document.document_path.name: term_data.norm_tf_idf * self.terms_in_documents[term].norm_tf_idf[document]}}
+                )
+                query_result.cosin_similarity += query_result.query_document_product[term][document.document_path.name]
+            else:
+                query_result.query_document_product.update(
+                    {term: {document.document_path.name: 0}}
+                )
         return query_result
 
     def print_vector_space(self):
