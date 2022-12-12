@@ -20,6 +20,7 @@ def index(collection):
     vector_space = VectorSpace(tokenizer, positional_index)
     positional_index.save("index")
     vector_space.save("vector_space")
+    print("Indexing is done.")
 
 
 def print_index(collection):
@@ -54,7 +55,7 @@ def is_valid_file(path):
 
 def main():
     print("Please enter number of the command you want to execute:")
-    select = input("[1] Build Positional Index\n"
+    select = input("[1] Build Positional Index and Vector Space.\n"
                    "[2] Print Positional Index\n"
                    "[3] Print Vector Space\n"
                    "[4] Phrase Query\n"
