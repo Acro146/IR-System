@@ -1,19 +1,12 @@
 import os
 import sys
-from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
-from texttable import Texttable
 
-from src.preprocess import Normalizer
-from src.preprocess import TokensScanner
-from src.preprocess import StopWords
-from src.preprocess import Tokenizer
+from src.preprocess import Normalizer, TokensScanner, Tokenizer, StopWords
 from src.document_collection import DocumentCollection
-from src.positional_index import PositionalIndex, Candidate
+from src.positional_index import PositionalIndex
 from src.vector_space import VectorSpace
-
-Collection_Path = "../Document Collection"
 
 
 def index(collection):
@@ -46,57 +39,13 @@ def print_vector_space(collection):
 def query(phrase, collection):
     positional_index_path = Path(collection) / "index"
     vector_space_path = Path(collection) / "vector_space"
-    is_valid_file(positional_index_path)
-    is_valid_file(vector_space_path)
+    if not is_valid_file(positional_index_path) or not is_valid_file(vector_space_path):
+        print("The 'index' or 'vector_space' are not found, please build the index first.")
+        return
     positional_index = PositionalIndex.load(positional_index_path)
     vector_space = VectorSpace.load(vector_space_path)
-
     matched_documents = positional_index.phrase_query(StringIO(phrase))
-
-    ranked_result: OrderedDict[Candidate, float]
-    ranked_result = OrderedDict()
-
-    query_result: list[vector_space.QueryResult()]
-    query_result = []
-    query_document_product: OrderedDict[str:{str, float}]
-    query_document_product: OrderedDict()
-
-    for candidate in matched_documents:
-        result = vector_space.get_query_results(phrase, candidate.document)
-        if not query_result:
-            query_result.append(result)
-
-        ranked_result.update({candidate: result.cosin_similarity})
-
-    """ uncomment this to print query document product """
-    """for result in query_result:
-        print(repr(result.query_document_product))"""
-
-    print_query_result(query_result)
-    print_ranked_result(ranked_result)
-
-
-def print_query_result(query_result):
-    print('*' * 50 + "\tQuery Result\t" + '*' * 50)
-    query_result_table = Texttable()
-    query_result_table.add_row(["term", "tf", "df", "idf", "w_tf", "tf-idf", "norm_tf-idf"])
-    for result in query_result:
-        for term, term_data in result.terms.items():
-            query_result_table.add_row(
-                [term, term_data.tf, term_data.df, term_data.idf, term_data.w_tf, term_data.tf_idf,
-                 term_data.norm_tf_idf])
-    print(query_result_table.draw())
-
-
-def print_ranked_result(ranked_result):
-    ranked_table = Texttable()
-    print('*' * 50 + "\tRanked Result\t" + '*' * 50)
-    ranked_result = OrderedDict(sorted(ranked_result.items(), key=lambda item: item[1], reverse=True))
-    ranked_table = Texttable(max_width=200).set_precision(9)
-    ranked_table.add_rows([["Document", "Position", "cosin_similarity"]])
-    for doc, cosin_similarity in ranked_result.items():
-        ranked_table.add_row([doc.document.document_path.name, doc.position, cosin_similarity])
-    print(ranked_table.draw())
+    vector_space.query(StringIO(phrase), matched_documents)
 
 
 def is_valid_file(path):

@@ -72,7 +72,7 @@ class PostingsList:
     frequency: int = field(default=0, compare=False)
     postings: list[Posting] = field(default_factory=lambda: [])
 
-    def update(self, token: Token) -> None:
+    def update(self, token: Token):
         if not self.postings:
             self.postings.append(Posting(token.document, 1, [token.position]))
             self.frequency += 1

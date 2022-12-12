@@ -33,7 +33,7 @@ class StopWords:
 
 
 class Scanner(metaclass=ABCMeta):
-    text: StringIO = field(default_factory=lambda: StringIO())
+    text: StringIO
 
     def __call__(self, text):
         self.text = text
