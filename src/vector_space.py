@@ -271,6 +271,7 @@ class VectorSpace:
             table.add_row(table_raw)
         print(table.draw())
 
+
     @classmethod
     def load(cls, path):
         with open(path, "rb") as file:
