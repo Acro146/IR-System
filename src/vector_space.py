@@ -52,7 +52,6 @@ class VectorSpace:
         self.terms_in_documents = OrderedDict()
         self.document_length = OrderedDict.fromkeys(self.document_collection, 0)
         self.__calculate_terms_schemes(positional_index)
-        self.terms_in_documents = OrderedDict(sorted(self.terms_in_documents.items(), key=lambda x: x[0]))
 
     def __calculate_terms_schemes(self, positional_index):
         number_of_documents = positional_index.number_of_documents
@@ -97,7 +96,7 @@ class VectorSpace:
 
         self.__print_table_td("Term Frequency", "tf")
 
-        self.__print_table_td("w tf(1+ log tf)", "w_tf")
+        self.__print_table_td("w_tf(1+ log tf)", "w_tf")
 
         print('\n\n')
         df_idf_table = Texttable(max_width=mx_width).set_precision(precision)
@@ -107,17 +106,17 @@ class VectorSpace:
             df_idf_table.add_row([term, term_data.df, term_data.idf])
         print(df_idf_table.draw())
 
-        self.__print_table_td("TF-IDF", "tf_idf")
+        self.__print_table_td("TF-IDF (w_tf*idf)", "tf_idf")
 
         print('\n\n')
-        print('-' * 50 + "Document length" + '-' * 50)
+        print('-' * 50 + "Document length (sqrt(sum(tf-idf**2)))" + '-' * 50)
         doc_len_table = Texttable(max_width=mx_width).set_precision(precision)
         doc_len_table.add_row(["Document", "Length"])
         for doc in self.document_collection:
             doc_len_table.add_row([doc.document_path.name, self.document_length[doc]])
         print(doc_len_table.draw())
 
-        self.__print_table_td("Normalized tf*idf", "norm_tf_idf")
+        self.__print_table_td("Normalized tf-idf (tf-idf/document_length)", "norm_tf_idf")
 
     def __print_table_td(self, table_name, data):
         print('\n\n')
