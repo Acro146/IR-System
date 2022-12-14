@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
-import re
 from abc import ABCMeta, abstractmethod
+from functools import partial
 from typing import Set
 from io import StringIO
 
@@ -46,14 +46,15 @@ class Scanner(metaclass=ABCMeta):
 
 class TokensScanner(Scanner):
     def __iter__(self):
-        tokens = re.findall(r'\S\w+[A-Z a-z]', self.text.read())
-        for i_token in tokens:
-            token = ""
-            for char in i_token:
-                if char.isalpha() or char == "'":
-                    token += char
-            if token:
+        token = ""
+        for char in iter(partial(self.text.read, 1), ""):
+            if char.isalpha() or char == "'":
+                token += char
+            elif token:
                 yield token
+                token = ""
+        if token:
+            yield token
 
 
 @dataclass
